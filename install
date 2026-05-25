@@ -30,6 +30,8 @@ case "$1" in
     fi
     echo "INSTALL epm"
     install -m 755 epm /usr/bin/epm
+    mkdir -p /etc/epm
+    cp etc/epm/mirror.list /etc/epm/mirror.list
     ;;
 
   --help )

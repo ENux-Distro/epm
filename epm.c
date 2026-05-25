@@ -2,8 +2,6 @@
  * epm - EPM Package Manager
  * A lightweight package manager using the .epm archive format.
  *
- * Build:   gcc -o epm epm.c -Wall -Wextra -O2 -std=c11 -Wno-format-truncation
- * Install: cp epm /usr/local/bin/epm
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -23,8 +21,7 @@
 #include <libgen.h>
 #include <limits.h>
 
-/* ── constants ─────────────────────────────────────────────────── */
-#define EPM_VERSION        "1.1.0"
+#define EPM_VERSION        "1.0.0"
 #define EPM_VAR_DIR        "/var/epm"
 #define EPM_INSTALLED_DIR  "/var/epm/installed"
 #define EPM_LOGS_DIR       "/var/epm/logs"
@@ -37,7 +34,6 @@
 /* Working buffer: two MAX_PATH components + separator + NUL */
 #define MAX_BUF            (MAX_PATH * 2 + 4)
 
-/* ── colour codes ───────────────────────────────────────────────── */
 #define COL_RESET   "\033[0m"
 #define COL_BOLD    "\033[1m"
 #define COL_RED     "\033[1;31m"
@@ -45,10 +41,6 @@
 #define COL_YELLOW  "\033[1;33m"
 #define COL_CYAN    "\033[1;36m"
 #define COL_BLUE    "\033[1;34m"
-
-/* ══════════════════════════════════════════════════════════════════
- * Logging
- * ══════════════════════════════════════════════════════════════════ */
 
 static void epm_log(const char *level_col, const char *prefix,
                     const char *fmt, va_list ap)
@@ -102,10 +94,6 @@ static void die(const char *fmt, ...) {
     epm_log(COL_RED,    "ERROR", fmt, ap); va_end(ap);
     exit(EXIT_FAILURE);
 }
-
-/* ══════════════════════════════════════════════════════════════════
- * Filesystem helpers
- * ══════════════════════════════════════════════════════════════════ */
 
 static int mkdirp(const char *path, mode_t mode)
 {
@@ -167,10 +155,6 @@ static void strip_trailing_slash(char *s)
     while (n > 0 && s[n - 1] == '/') s[--n] = '\0';
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * Initialise directory structure
- * ══════════════════════════════════════════════════════════════════ */
-
 static void ensure_dirs(void)
 {
     const char *dirs[] = {
@@ -193,9 +177,6 @@ static void ensure_dirs(void)
     }
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * Package name helpers
- * ══════════════════════════════════════════════════════════════════ */
 
 /* "path/to/yes.epm" → "yes"   |   "yes" → "yes" */
 static const char *pkg_name_from_path(const char *path)
@@ -219,13 +200,6 @@ static int is_local_pkg(const char *arg)
     return 0;
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * Mirror download
- *
- * Tries each mirror in mirror.list in order.
- * Downloads <mirror>/<pkg>.epm into EPM_CACHE_DIR/<pkg>.epm.
- * Returns the path to the cached file, or NULL on total failure.
- * ══════════════════════════════════════════════════════════════════ */
 
 static const char *download_from_mirrors(const char *pkg_name)
 {
@@ -297,9 +271,6 @@ static const char *download_from_mirrors(const char *pkg_name)
     return NULL;  /* all mirrors failed */
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * Manifest collection (recursive)
- * ══════════════════════════════════════════════════════════════════ */
 
 static void collect_files(const char *base, const char *rel, FILE *manifest)
 {
@@ -333,9 +304,6 @@ static void collect_files(const char *base, const char *rel, FILE *manifest)
     closedir(d);
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * install  (shared core, called with a resolved local .epm path)
- * ══════════════════════════════════════════════════════════════════ */
 
 static int install_local(const char *pkg_path)
 {
@@ -472,10 +440,6 @@ static int cmd_install(const char *arg)
     return ret;
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * purge
- * ══════════════════════════════════════════════════════════════════ */
-
 static int cmd_purge(const char *pkg_name)
 {
     char record_path[MAX_PATH];
@@ -519,10 +483,6 @@ static int cmd_purge(const char *pkg_name)
              pkg_name, failed, removed);
     return failed ? 1 : 0;
 }
-
-/* ══════════════════════════════════════════════════════════════════
- * sync  — ping every mirror
- * ══════════════════════════════════════════════════════════════════ */
 
 static int ping_url(const char *url)
 {
@@ -575,10 +535,6 @@ static int cmd_sync(void)
     return fail_count ? 1 : 0;
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * clean  — wipe /var/epm/logs  AND  /var/epm/cache
- * ══════════════════════════════════════════════════════════════════ */
-
 static int cmd_clean(void)
 {
     int any = 0;
@@ -605,9 +561,6 @@ static int cmd_clean(void)
     return 0;
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * usage
- * ══════════════════════════════════════════════════════════════════ */
 
 static void usage(void)
 {
@@ -632,10 +585,6 @@ static void usage(void)
         COL_CYAN, COL_RESET,
         EPM_MIRROR_LIST, EPM_INSTALLED_DIR, EPM_CACHE_DIR, EPM_LOGS_DIR);
 }
-
-/* ══════════════════════════════════════════════════════════════════
- * main
- * ══════════════════════════════════════════════════════════════════ */
 
 int main(int argc, char *argv[])
 {

@@ -5,20 +5,11 @@ case "$1" in
     if command -v gcc >/dev/null; then
       true
     else
-      echo "You need to install gcc first" ; exit 1
+      echo "gcc not found, installing it via apt"
+      apt install gcc --no-install-recommends
     fi
     echo "CC epm.c"
     gcc epm.c -o epm
-    ;;
-
-  --static )
-    if command -v gcc >/dev/null; then
-      true
-    else
-      echo "You need to install gcc first" ; exit 1
-    fi
-    echo "CC-static epm.c"
-    gcc epm.c -o -static epm
     ;;
 
   install )
